@@ -6,6 +6,7 @@ require (
 	github.com/IBM/sarama v1.45.0
 	github.com/eapache/queue v1.1.0
 	github.com/gin-gonic/gin v1.10.0
+	github.com/go-kratos/aegis v0.2.0
 	github.com/prometheus/client_golang v1.21.0
 	github.com/redis/go-redis/v9 v9.7.1
 	go.uber.org/zap v1.27.0
