@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-kratos/aegis/circuitbreaker"
+	"github.com/go-kratos/aegis/circuitbreaker/sre"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -11,6 +12,10 @@ import (
 
 type InterceptorBuilder struct {
 	breaker circuitbreaker.CircuitBreaker
+}
+
+func NewInterceptorBuilder() *InterceptorBuilder {
+	return &InterceptorBuilder{breaker: sre.NewBreaker()}
 }
 
 func (b *InterceptorBuilder) Build() grpc.UnaryServerInterceptor {
