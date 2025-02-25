@@ -20,18 +20,18 @@ func NewInterceptorBuilder() *InterceptorBuilder {
 
 func (b *InterceptorBuilder) Build() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
-		if b.breaker.Allow() == nil {
-			resp, err = handler(ctx, req)
-			if err != nil {
-				// 标记处理失败
-				// 可以进一步判断是否为业务错误, 根据实际情况来选
-				b.breaker.MarkFailed()
-			} else {
-				b.breaker.MarkSuccess()
-			}
+		if err := b.breaker.Allow(); err != nil {
+			return nil, status.Errorf(codes.Unavailable, "触发熔断")
 		}
-		// 触发了熔断器
-		b.breaker.MarkFailed()
-		return nil, status.Errorf(codes.Unavailable, "触发熔断")
+
+		// 尝试处理请求
+		resp, err = handler(ctx, req)
+		if err != nil {
+			b.breaker.MarkFailed()
+			return nil, err
+		}
+
+		b.breaker.MarkSuccess()
+		return resp, nil
 	}
 }
