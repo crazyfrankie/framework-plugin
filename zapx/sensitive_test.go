@@ -1,7 +1,6 @@
 package zapx
 
 import (
-	"os"
 	"testing"
 
 	"go.uber.org/zap"
@@ -9,17 +8,13 @@ import (
 )
 
 func TestSensitiveLog(t *testing.T) {
-	encoderCfg := zapcore.EncoderConfig{
-		MessageKey:     "msg",
-		LevelKey:       "level",
-		NameKey:        "logger",
-		EncodeLevel:    zapcore.LowercaseLevelEncoder,
-		EncodeTime:     zapcore.ISO8601TimeEncoder,
-		EncodeDuration: zapcore.StringDurationEncoder,
+	cfg := zap.NewProductionConfig()
+	l, err := cfg.Build(zap.WrapCore(func(core zapcore.Core) zapcore.Core {
+		return NewCustomCore(core)
+	}))
+	if err != nil {
+		panic(err)
 	}
-	core := zapcore.NewCore(zapcore.NewJSONEncoder(encoderCfg), os.Stdout, zapcore.DebugLevel)
-	customCore := NewCustomCore(core)
-	l := zap.New(customCore)
 
-	l.Info("info msg", zap.String("phone", "13117127078")) // print {"level":"info","msg":"info msg","phone":"131****7078"}
+	l.Info("info msg", zap.String("phone", "13117127078")) // print {"level":"info","ts":1744177043.0410442,"caller":"zapx/sensitive_test.go:19","msg":"info msg","phone":"131****7078"}
 }
